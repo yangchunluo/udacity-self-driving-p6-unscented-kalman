@@ -25,4 +25,10 @@ public:
   static VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
                                 const vector<VectorXd> &ground_truth);
 
+  /**
+  * A standalone method to generate sigma points.
+  */
+  static void GenerateSigmaPoints(int n_aug, const VectorXd& x, const MatrixXd& P,
+                                  int lambda, double std_a, double std_yawdd, MatrixXd& out);
+
 };

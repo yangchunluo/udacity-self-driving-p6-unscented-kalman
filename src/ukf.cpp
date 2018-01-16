@@ -118,10 +118,6 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
   }
 }
 
-static inline double squared(double x) {
-  return x * x;
-}
-
 void UKF::Prediction(double dt) {
   /**
   TODO:
@@ -133,31 +129,7 @@ void UKF::Prediction(double dt) {
   /******************************************************************************
    * 1. Generate sigma points
    ******************************************************************************/
-  const int naug = n_aug_ - n_x_;
 
-  // Augmented mean state vector
-  VectorXd x_aug = VectorXd(n_aug_);
-  x_aug.head(n_x_) = x_;
-  x_aug.tail(naug) << 0, 0;
-
-  // Augmented state covariance
-  MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
-  P_aug.fill(0.0);
-  P_aug.topLeftCorner(n_x_, n_x_) = P_;
-  P_aug.bottomRightCorner(naug, naug) << squared(std_a_), 0,
-                                         0, squared(std_yawdd_);
-
-  // Square root matrix
-  MatrixXd A = P_aug.llt().matrixL();
-
-  // Augmented sigma point matrix
-  MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-  Xsig_aug.col(0) = x_aug;
-  double scaler = sqrt(lambda_ + n_aug_);
-  for (int i = 0; i < n_aug_; i++) {
-      Xsig_aug.col(1 + i) = x_aug + scaler * A.col(i);
-      Xsig_aug.col(1 + n_aug_ + i) = x_aug - scaler * A.col(i);
-  }
 
 }
 
