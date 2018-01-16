@@ -1,9 +1,10 @@
-#include <uWS/uWS.h>
 #include <iostream>
+#include <cmath>
+#include <cassert>
+#include <uWS/uWS.h>
 #include "json.hpp"
-#include <math.h>
 #include "ukf.h"
-#include "tools.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ int main() {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
-  UKF ukf;
+  UKF ukf(true, true);
 
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
@@ -99,13 +100,14 @@ int main() {
     // Call ProcessMeasurment(meas_package) for Kalman filter
     ukf.ProcessMeasurement(meas_package);
 
-    // Make a copy of the current estimation from the Kalman filter's state vector
-    VectorXd estimate = ukf.x_;
-    assert(&estimate != &ukf.x_);
+    // Save the current estimates.
+    VectorXd estimate = ukf.GetEstimates();
+    VectorXd e2 = ukf.GetEstimates();
+    assert (&e2 != &estimate);
     estimations.push_back(estimate);
 
     // Compute the running error metric
-    VectorXd RMSE = Tools::CalculateRMSE(estimations, ground_truth);
+    VectorXd RMSE = Utils::CalculateRMSE(estimations, ground_truth);
 
     // Assemble the message to be sent back
     json msgJson;

@@ -7,21 +7,22 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using namespace std;
 
-class Tools {
+class Utils {
 public:
   /**
   * Constructor.
   */
-  Tools();
+  Utils();
 
   /**
   * Destructor.
   */
-  virtual ~Tools();
+  virtual ~Utils();
 
   /**
   * A helper method to calculate RMSE.
   */
-  static VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truth);
+  static VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
+                                const vector<VectorXd> &ground_truth);
 
 };

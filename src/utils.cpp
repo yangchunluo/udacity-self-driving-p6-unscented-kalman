@@ -1,15 +1,15 @@
 #include <iostream>
-#include "tools.h"
+#include "utils.h"
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using std::vector;
 
-Tools::Tools() {}
+Utils::Utils() {}
 
-Tools::~Tools() {}
+Utils::~Utils() {}
 
-VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
+VectorXd Utils::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
   if (estimations.size() == 0) {
       throw "the estimation vector size should not be zero";

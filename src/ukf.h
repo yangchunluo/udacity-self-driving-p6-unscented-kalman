@@ -1,5 +1,4 @@
-#ifndef UKF_H
-#define UKF_H
+#pragma once
 
 #include "measurement_package.h"
 #include "Eigen/Dense"
@@ -11,7 +10,7 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 class UKF {
-public:
+private:
 
   ///* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
@@ -32,7 +31,7 @@ public:
   MatrixXd Xsig_pred_;
 
   ///* time when the state is true, in us
-  long long time_us_;
+  long long previous_timestamp_;
 
   ///* Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
@@ -67,11 +66,11 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
-
+public:
   /**
    * Constructor
    */
-  UKF();
+  UKF(bool, bool);
 
   /**
    * Destructor
@@ -79,14 +78,27 @@ public:
   virtual ~UKF();
 
   /**
-   * ProcessMeasurement
+   * Process a measurement.
    * @param meas_package The latest measurement data of either radar or laser
    */
-  void ProcessMeasurement(MeasurementPackage meas_package);
+  void ProcessMeasurement(const MeasurementPackage& m);
 
   /**
-   * Prediction Predicts sigma points, the state, and the state covariance
-   * matrix
+   * Get a copy of the current estimate vector.
+   */
+  VectorXd GetEstimates() {
+    return x_;
+  }
+
+private:
+  /**
+   * Initialize the measurement.
+   * @param meas_package The latest measurement data of either radar or laser
+   */
+  void InitializeMeasurement(const MeasurementPackage& m);
+
+  /**
+   * Predicts sigma points, the state, and the state covariance matrix
    * @param delta_t Time between k and k+1 in s
    */
   void Prediction(double delta_t);
@@ -95,13 +107,11 @@ public:
    * Updates the state and the state covariance matrix using a laser measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateLidar(MeasurementPackage meas_package);
+  void UpdateLidar(const MeasurementPackage& m);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateRadar(MeasurementPackage meas_package);
+  void UpdateRadar(const MeasurementPackage& m);
 };
-
-#endif /* UKF_H */
