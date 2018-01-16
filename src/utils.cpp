@@ -20,14 +20,14 @@ VectorXd Utils::CalculateRMSE(const vector<VectorXd> &estimations,
   }
 
   // Initialization
-  VectorXd rmse(estimations[0].size());
+  VectorXd rmse(ground_truth[0].size());
   for (int i = 0; i < rmse.size(); i++) {
     rmse(i) = 0;
   }
 
   // Accumulate squared residuals
   for(int i = 0; i < estimations.size(); i++) {
-    VectorXd diff = ground_truth[i] - estimations[i];
+    VectorXd diff = ground_truth[i] - estimations[i].head(rmse.size());
     diff = diff.array() * diff.array();
     rmse += diff;
   }
@@ -104,5 +104,40 @@ void Utils::PredictSigmaPoints(int n_x, const MatrixXd& Xsig_aug, double dt,
     pn(4) = dt * yawdd;
       
     out.col(i) = Xsig_aug.col(i).head(n_x) + pf + pn;
+  }
+}
+
+void Utils::GetWeights(int n_aug, int lambda, VectorXd& out) {
+  out = VectorXd(2 * n_aug + 1);
+  out(0) = ((double)lambda) / (lambda + n_aug);
+  for (int i = 1; i < out.size(); i++) {
+    out(i) = 0.5 / (lambda + n_aug);
+  }
+}
+
+static inline void normalizeAngle(double& angle) {
+  const double PI = 3.14159265358979;
+  while (angle > PI) angle -= 2 * PI;
+  while (angle < -PI) angle += 2 * PI;
+}
+
+void Utils::PredictMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
+                                     VectorXd& out_x, MatrixXd &out_P) {
+  const int n_x = Xsig_pred.rows();
+  
+  // Predict state mean
+  out_x = Xsig_pred * weights;
+
+  // Predict state covariance matrix
+  out_P = MatrixXd(n_x, n_x);
+  out_P.fill(0.0);
+  for (int i = 0; i < weights.size(); i++) {
+    // State difference
+    VectorXd x_diff = Xsig_pred.col(i) - out_x;
+    // Angle normalization
+    cout<<"normalizing "<<x_diff(3)<<endl;
+    normalizeAngle(x_diff(3));
+
+    out_P += weights(i) * x_diff * x_diff.transpose();
   }
 }

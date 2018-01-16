@@ -101,7 +101,7 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
     return;
   }
 
-  double dt = m.timestamp_ - previous_timestamp_;
+  double dt = (m.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = m.timestamp_;
 
   Prediction(dt);
@@ -121,15 +121,16 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
 }
 
 void UKF::Prediction(double dt) {
-
   MatrixXd Xsig_aug;
   Utils::GenerateSigmaPoints(n_aug_, x_, P_, lambda_, std_a_, std_yawdd_, Xsig_aug);
 
   MatrixXd Xsig_pred;
   Utils::PredictSigmaPoints(n_x_, Xsig_aug, dt, Xsig_pred);
 
+  VectorXd weights;
+  Utils::GetWeights(n_aug_, lambda_, weights);
 
-
+  Utils::PredictMeanAndCovariance(weights, Xsig_pred, x_, P_);
 }
 
 /**
