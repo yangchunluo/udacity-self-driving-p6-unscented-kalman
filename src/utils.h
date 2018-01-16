@@ -31,4 +31,9 @@ public:
   static void GenerateSigmaPoints(int n_aug, const VectorXd& x, const MatrixXd& P,
                                   int lambda, double std_a, double std_yawdd, MatrixXd& out);
 
+  /**
+  * A standalone method to predict sigma points.
+  */
+  static void PredictSigmaPoints(int n_x, const MatrixXd& Xsig_aug, double dt, MatrixXd& out);
+
 };

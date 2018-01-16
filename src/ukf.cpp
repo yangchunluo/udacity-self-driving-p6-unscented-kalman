@@ -1,6 +1,8 @@
 #include "ukf.h"
-#include "Eigen/Dense"
+
 #include <iostream>
+#include "Eigen/Dense"
+#include "utils.h"
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -119,16 +121,13 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
 }
 
 void UKF::Prediction(double dt) {
-  /**
-  TODO:
 
-  Complete this function! Estimate the object's location. Modify the state
-  vector, x_. Predict sigma points, the state, and the state covariance matrix.
-  */
+  MatrixXd Xsig_aug;
+  Utils::GenerateSigmaPoints(n_aug_, x_, P_, lambda_, std_a_, std_yawdd_, Xsig_aug);
 
-  /******************************************************************************
-   * 1. Generate sigma points
-   ******************************************************************************/
+  MatrixXd Xsig_pred;
+  Utils::PredictSigmaPoints(n_x_, Xsig_aug, dt, Xsig_pred);
+
 
 
 }
