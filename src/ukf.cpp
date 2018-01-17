@@ -30,11 +30,11 @@ UKF::UKF(bool use_laser, bool use_radar): use_laser_(use_laser),
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   // FIXME: to tune
-  std_a_ = 30;
+  std_a_ = 0.1;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
   // FIXME: to tune
-  std_yawdd_ = 30;
+  std_yawdd_ = 0.1;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -80,9 +80,9 @@ void UKF::InitializeMeasurement(const MeasurementPackage& m) {
   // Initialize process covariance matrix. We are only certain about location (px, py) at this point.
   P_ << 1, 0, 0, 0, 0,
         0, 1, 0, 0, 0,
-        0, 0, 1000, 0, 0,
-        0, 0, 0, 1000, 0,
-        0, 0, 0, 0, 1000;
+        0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1;
 
   // Record the first timestamp.
   previous_timestamp_ = m.timestamp_;
@@ -152,6 +152,6 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
   Utils::UpdateStates(isRadar, weights_, Xsig_pred, Zsig, z_pred, m.raw_measurements_, S,
                       /*inout*/ x_, P_);
 
-  cout << "x=" << x_ << endl;
-  //cout << "P=" << P_ << endl;
+  cout << "x=\n" << x_ << endl;
+  cout << "P=\n" << P_ << endl;
 }

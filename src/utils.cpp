@@ -21,13 +21,11 @@ VectorXd Utils::CalculateRMSE(const vector<VectorXd> &estimations,
 
   // Initialization
   VectorXd rmse(ground_truth[0].size());
-  for (int i = 0; i < rmse.size(); i++) {
-    rmse(i) = 0;
-  }
+  rmse.fill(0.0);
 
   // Accumulate squared residuals
   for(int i = 0; i < estimations.size(); i++) {
-    VectorXd diff = ground_truth[i] - estimations[i].head(rmse.size());
+    VectorXd diff = ground_truth[i] - estimations[i];
     diff = diff.array() * diff.array();
     rmse += diff;
   }
@@ -88,8 +86,8 @@ void Utils::PredictSigmaPoints(int n_x, const MatrixXd& Xsig_aug, double dt,
       
     // Process function
     VectorXd pf(n_x);
-    pf(0) = fabs(yawd < 0.000001) ? v * cos(yaw) * dt : v / yawd * (sin(yaw + yawd * dt) - sin(yaw));
-    pf(1) = fabs(yawd < 0.000001) ? v * sin(yaw) * dt : v / yawd * (-cos(yaw + yawd * dt) + cos(yaw));
+    pf(0) = fabs(yawd) < 0.000001 ? v * cos(yaw) * dt : v / yawd * (sin(yaw + yawd * dt) - sin(yaw));
+    pf(1) = fabs(yawd) < 0.000001 ? v * sin(yaw) * dt : v / yawd * (-cos(yaw + yawd * dt) + cos(yaw));
     pf(2) = 0;
     pf(3) = yawd * dt;
     pf(4) = 0;
@@ -146,8 +144,9 @@ void Utils::GetRadarMeasurementMeanAndCovariance(const VectorXd& weights, const 
                                                  VectorXd& out_zpred,  MatrixXd& out_Zsig,
                                                  MatrixXd& out_S) {
   const int n_z = std_radar_noise.size(); 
-  out_Zsig = MatrixXd(n_z, Xsig_pred.cols());
+
   // Transform sigma points into measurement space
+  out_Zsig = MatrixXd(n_z, Xsig_pred.cols());
   for (int i = 0; i < Xsig_pred.cols(); i++) {
     double px = Xsig_pred(0, i),
            py = Xsig_pred(1, i),

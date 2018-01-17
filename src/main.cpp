@@ -105,7 +105,7 @@ int main() {
     VectorXd estimate(4);
     estimate << states(0), // px
                 states(1), // py
-    	          states(2) * cos(states(3)), // v * cos(yaw)
+                states(2) * cos(states(3)), // v * cos(yaw)
                 states(2) * sin(states(3)); // v * sin(yaw)
     estimations.push_back(estimate);
 
