@@ -39,6 +39,12 @@ public:
                                                    VectorXd& out_zpred,  MatrixXd& out_Zsig,
                                                    MatrixXd& out_S);
 
+  /** A standalone method to get laser measurement mean and covariance. */
+  static void GetLaserMeasurementMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
+                                                   const VectorXd& std_laser_noise,
+                                                   VectorXd& out_zpred,  MatrixXd& out_Zsig,
+                                                   MatrixXd& out_S);
+
   /** A standalone method to update states. */
   static void UpdateStates(const VectorXd& weights, const MatrixXd& Xsig_pred, const MatrixXd& Zsig,
                            const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,

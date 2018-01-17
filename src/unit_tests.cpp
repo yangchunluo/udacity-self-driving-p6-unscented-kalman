@@ -260,6 +260,7 @@ int main() {
   TestPredictSigmaPoints();
   TestGetPredictionMeanAndCovariance();
   TestGetRadarMeasurementMeanAndCovariance();
+  // TODO: TestGetLaserMeasurementMeanAndCovariance();
   TestUpdateStates();
 
   cout<<"All tests passed"<<endl;

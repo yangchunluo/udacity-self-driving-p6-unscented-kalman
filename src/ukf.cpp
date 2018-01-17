@@ -25,6 +25,9 @@ UKF::UKF(bool use_laser, bool use_radar): use_laser_(use_laser),
   // Process covariance matrix
   P_ = MatrixXd(n_x_, n_x_);
 
+  // Initialize sigma point weights
+  Utils::GetWeights(n_aug_, lambda_, /*output*/ weights_);
+
   // Process noise standard deviation longitudinal acceleration in m/s^2
   // FIXME: to tune
   std_a_ = 30;
@@ -104,61 +107,36 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
   double dt = (m.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = m.timestamp_;
 
-  Prediction(dt);
-
-  switch (m.sensor_type_) {
-    case MeasurementPackage::RADAR: {
-      UpdateRadar(m);
-      break;
-    }
-    case MeasurementPackage::LASER: {
-      UpdateLidar(m);
-      break;
-    }
-    default:
-      throw "Unknown sensor type";
-  }
-}
-
-void UKF::Prediction(double dt) {
+  // Prediction
   MatrixXd Xsig_aug;
   Utils::GenerateSigmaPoints(n_aug_, x_, P_, lambda_, std_a_, std_yawdd_, /*output*/ Xsig_aug);
 
   MatrixXd Xsig_pred;
   Utils::PredictSigmaPoints(n_x_, Xsig_aug, dt, /*output*/ Xsig_pred);
 
-  VectorXd weights;
-  Utils::GetWeights(n_aug_, lambda_, /*output*/ weights);
+  Utils::GetPredictionMeanAndCovariance(weights_, Xsig_pred, /*output*/ x_, P_);
 
-  Utils::GetPredictionMeanAndCovariance(weights, Xsig_pred, /*output*/ x_, P_);
-}
-
-/**
- * Updates the state and the state covariance matrix using a laser measurement.
- * @param {MeasurementPackage} meas_package
- */
-void UKF::UpdateLidar(const MeasurementPackage& m) {
-  /**
-  TODO:
-
-  Complete this function! Use lidar data to update the belief about the object's
-  position. Modify the state vector, x_, and covariance, P_.
-
-  You'll also need to calculate the lidar NIS.
-  */
-}
-
-/**
- * Updates the state and the state covariance matrix using a radar measurement.
- * @param {MeasurementPackage} meas_package
- */
-void UKF::UpdateRadar(const MeasurementPackage& m) {
-  /**
-  TODO:
-
-  Complete this function! Use radar data to update the belief about the object's
-  position. Modify the state vector, x_, and covariance, P_.
-
-  You'll also need to calculate the radar NIS.
-  */
+  // Update
+  VectorXd z_pred;
+  MatrixXd Zsig, S;
+  switch (m.sensor_type_) {
+    case MeasurementPackage::RADAR: {
+      VectorXd std_radar_noise(3);
+      std_radar_noise << std_radr_, std_radphi_, std_radrd_;
+      Utils::GetRadarMeasurementMeanAndCovariance(weights_, Xsig_pred, std_radar_noise,
+                                                  /*output*/ z_pred, Zsig, S);
+      break;
+    }
+    case MeasurementPackage::LASER: {
+      VectorXd std_laser_noise(2);
+      std_laser_noise << std_laspx_, std_laspy_;
+      Utils::GetLaserMeasurementMeanAndCovariance(weights_, Xsig_pred, std_laser_noise,
+                                                  /*output*/ z_pred, Zsig, S);
+      break;
+    }
+    default:
+      throw "Unknown sensor type";
+  }
+  Utils::UpdateStates(weights_, Xsig_pred, Zsig, z_pred, m.raw_measurements_, S,
+                      /*inout*/ x_, P_);
 }

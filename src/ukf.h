@@ -27,9 +27,6 @@ private:
   ///* state covariance matrix
   MatrixXd P_;
 
-  ///* predicted sigma points matrix
-  MatrixXd Xsig_pred_;
-
   ///* time when the state is true, in us
   long long previous_timestamp_;
 
@@ -96,22 +93,4 @@ private:
    * @param meas_package The latest measurement data of either radar or laser
    */
   void InitializeMeasurement(const MeasurementPackage& m);
-
-  /**
-   * Predicts sigma points, the state, and the state covariance matrix
-   * @param delta_t Time between k and k+1 in s
-   */
-  void Prediction(double delta_t);
-
-  /**
-   * Updates the state and the state covariance matrix using a laser measurement
-   * @param meas_package The measurement at k+1
-   */
-  void UpdateLidar(const MeasurementPackage& m);
-
-  /**
-   * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
-   */
-  void UpdateRadar(const MeasurementPackage& m);
 };
