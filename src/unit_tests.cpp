@@ -239,7 +239,9 @@ void TestUpdateStates() {
       0.2187,
       2.0062;
 
-  Utils::UpdateStates(true, weights, Xsig_pred, Zsig, z_pred, z, S, x, P);
+  double nis;
+  Utils::UpdateStates(true, weights, Xsig_pred, Zsig, z_pred, z, S, x, P, nis);
+  cout << "NIS is " << nis <<endl;
 
   VectorXd expected_x(n_x);
   expected_x << 5.92276, 1.41823, 2.15593, 0.489274, 0.321338;

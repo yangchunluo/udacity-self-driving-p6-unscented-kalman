@@ -191,7 +191,7 @@ void Utils::GetMeasurementMeanAndCovariance(const bool isRadar, const VectorXd& 
 
 void Utils::UpdateStates(const bool isRadar, const VectorXd& weights, const MatrixXd& Xsig_pred,
                          const MatrixXd& Zsig, const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,
-                         VectorXd& x, MatrixXd& P) {
+                         VectorXd& x, MatrixXd& P, double& nis) {
   const int n_x = x.size(),
             n_z = z.size();
 
@@ -215,7 +215,8 @@ void Utils::UpdateStates(const bool isRadar, const VectorXd& weights, const Matr
   }
   
   // Calculate Kalman gain K
-  MatrixXd K = Tc * S.inverse();
+  MatrixXd S_inv = S.inverse();
+  MatrixXd K = Tc * S_inv;
   
   // Residual concerning the actual measurement
   VectorXd z_diff = z - z_pred;
@@ -227,4 +228,7 @@ void Utils::UpdateStates(const bool isRadar, const VectorXd& weights, const Matr
   // Update state mean and covariance matrix
   x += K * z_diff;
   P -= K * S * K.transpose();
+
+  // Calculate the NIS score
+  nis = z_diff.transpose() * S_inv * z_diff; 
 }

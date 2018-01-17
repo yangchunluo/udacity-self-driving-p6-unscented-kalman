@@ -89,12 +89,12 @@ void UKF::InitializeMeasurement(const MeasurementPackage& m) {
   previous_timestamp_ = m.timestamp_;
 }
 
-void UKF::ProcessMeasurement(const MeasurementPackage& m) {
+double UKF::ProcessMeasurement(const MeasurementPackage& m) {
   if (!is_initialized_) {
     cout << "UKF initialization" << endl;
     InitializeMeasurement(m);
     is_initialized_ = true;
-    return;
+    return -1;
   }
   
   bool isRadar;
@@ -102,7 +102,7 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
     case MeasurementPackage::RADAR: {
       if (!use_radar_) {
         cout << "Skipping radar measurement"<<endl;
-        return;
+        return -1;
       }
       isRadar = true;
       break;
@@ -110,7 +110,7 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
     case MeasurementPackage::LASER: {
       if (!use_laser_) {
         cout << "Skipping laser measurement"<<endl;
-        return;
+        return -1;
       }
       isRadar = false;
       break;
@@ -145,9 +145,12 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
   Utils::GetMeasurementMeanAndCovariance(isRadar, weights_, Xsig_pred, std_noise,
                                          /*output*/ z_pred, Zsig, S);
 
+  double nis;
   Utils::UpdateStates(isRadar, weights_, Xsig_pred, Zsig, z_pred, m.raw_measurements_, S,
-                      /*inout*/ x_, P_);
+                      /*inout*/ x_, P_, nis);
 
   cout << "x=\n" << x_ << endl;
   cout << "P=\n" << P_ << endl;
+
+  return nis;
 }

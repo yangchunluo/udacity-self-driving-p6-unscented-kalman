@@ -42,7 +42,9 @@ int main() {
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  h.onMessage([&ukf, &estimations, &ground_truth]
+  vector<double> sensor_nis[MeasurementPackage::SensorType::COUNT];
+
+  h.onMessage([&ukf, &estimations, &ground_truth, &sensor_nis]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     
     // "42" at the start of the message means there's a websocket message event.
@@ -98,7 +100,12 @@ int main() {
     ground_truth.push_back(gt_values);
     
     // Call ProcessMeasurment(meas_package) for Kalman filter
-    ukf.ProcessMeasurement(meas_package);
+    double nis = ukf.ProcessMeasurement(meas_package);
+
+    // Accumulate NIS per sensor type
+    if (nis > 0) {
+      sensor_nis[meas_package.sensor_type_].push_back(nis);
+    }
 
     // Get the current estimates and convert to (px, py, vx, vy) space
     VectorXd states = ukf.GetStates();

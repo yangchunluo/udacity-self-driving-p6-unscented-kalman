@@ -76,9 +76,10 @@ public:
 
   /**
    * Process a measurement.
-   * @param meas_package The latest measurement data of either radar or laser
+   * @param meas_package: The latest measurement data of either radar or laser
+   * @return: NIS score
    */
-  void ProcessMeasurement(const MeasurementPackage& m);
+  double ProcessMeasurement(const MeasurementPackage& m);
 
   /**
    * Get a copy of the current state vector.
