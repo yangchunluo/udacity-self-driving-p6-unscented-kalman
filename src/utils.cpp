@@ -115,14 +115,14 @@ void Utils::GetWeights(int n_aug, int lambda, VectorXd& out) {
   }
 }
 
-static inline void normalizeAngle(double& angle) {
+static inline void NormalizeAngle(double& angle) {
   const double PI = 3.14159265358979;
   while (angle > PI) angle -= 2 * PI;
   while (angle < -PI) angle += 2 * PI;
 }
 
-void Utils::PredictMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
-                                     VectorXd& out_x, MatrixXd &out_P) {
+void Utils::GetPredictionMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
+                                           VectorXd& out_x, MatrixXd &out_P) {
   const int n_x = Xsig_pred.rows();
   
   // Predict state mean
@@ -135,9 +135,89 @@ void Utils::PredictMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsi
     // State difference
     VectorXd x_diff = Xsig_pred.col(i) - out_x;
     // Angle normalization
-    cout<<"normalizing "<<x_diff(3)<<endl;
-    normalizeAngle(x_diff(3));
+    NormalizeAngle(x_diff(3));
 
     out_P += weights(i) * x_diff * x_diff.transpose();
   }
+}
+
+void Utils::GetRadarMeasurementMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
+                                                 const VectorXd& std_radar_noise,
+                                                 VectorXd& out_zpred,  MatrixXd& out_Zsig,
+                                                 MatrixXd& out_S) {
+  const int n_z = std_radar_noise.size(); 
+  out_Zsig = MatrixXd(n_z, Xsig_pred.cols());
+  // Transform sigma points into measurement space
+  for (int i = 0; i < Xsig_pred.cols(); i++) {
+    double px = Xsig_pred(0, i),
+           py = Xsig_pred(1, i),
+            v = Xsig_pred(2, i),
+          yaw = Xsig_pred(3, i),
+         yawd = Xsig_pred(4, i);
+      
+      VectorXd zsig(n_z);
+      zsig(0) = sqrt(squared(px) + squared(py));                   // radr
+      zsig(1) = atan2(py, px);                                     // phi
+      zsig(2) = (px * cos(yaw) * v + py * sin(yaw) * v) / zsig(0); // radrd
+
+      out_Zsig.col(i) = zsig;
+  }
+  
+  // Calculate mean predicted measurement
+  out_zpred = out_Zsig * weights;
+  
+  // Calculate innovation covariance matrix S
+  out_S = MatrixXd(n_z, n_z);
+  out_S.fill(0);
+  for (int i = 0; i < weights.size(); i++) {
+    // Measurement residual
+    VectorXd z_diff = out_Zsig.col(i) - out_zpred;
+    // Angle normozation
+    NormalizeAngle(z_diff(1));
+
+    out_S += weights(i) * z_diff * z_diff.transpose();
+  }
+
+  // Add measurement noise covariance matrix
+  for (int i = 0; i < n_z; i++) {
+    out_S(i, i) += squared(std_radar_noise(i));
+  }
+}
+
+// void Utils::GetLaserMeasurementMeanAndCovariance();
+
+void Utils::UpdateStates(const VectorXd& weights, const MatrixXd& Xsig_pred, const MatrixXd& Zsig,
+                         const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,
+                         VectorXd& x, MatrixXd& P) {
+  const int n_x = x.size(),
+            n_z = z.size();
+
+  // Calculate cross correlation matrix
+  MatrixXd Tc = MatrixXd(n_x, n_z);
+  Tc.fill(0);
+  for (int i = 0; i < Xsig_pred.cols(); i++) {
+    // Measurement residual
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+    // Angle normalization
+    NormalizeAngle(z_diff(1));
+
+    // State difference
+    VectorXd x_diff = Xsig_pred.col(i) - x;
+    // Angle normalization
+    NormalizeAngle(x_diff(3));
+
+    Tc += weights(i) * x_diff * z_diff.transpose();
+  }
+  
+  // Calculate Kalman gain K
+  MatrixXd K = Tc * S.inverse();
+  
+  // Residual concerning the actual measurement
+  VectorXd z_diff = z - z_pred;
+  // Angle normalization
+  NormalizeAngle(z_diff(1));
+
+  // Update state mean and covariance matrix
+  x += K * z_diff;
+  P -= K * S * K.transpose();
 }

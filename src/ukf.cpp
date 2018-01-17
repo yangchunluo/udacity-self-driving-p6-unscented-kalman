@@ -122,15 +122,15 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
 
 void UKF::Prediction(double dt) {
   MatrixXd Xsig_aug;
-  Utils::GenerateSigmaPoints(n_aug_, x_, P_, lambda_, std_a_, std_yawdd_, Xsig_aug);
+  Utils::GenerateSigmaPoints(n_aug_, x_, P_, lambda_, std_a_, std_yawdd_, /*output*/ Xsig_aug);
 
   MatrixXd Xsig_pred;
-  Utils::PredictSigmaPoints(n_x_, Xsig_aug, dt, Xsig_pred);
+  Utils::PredictSigmaPoints(n_x_, Xsig_aug, dt, /*output*/ Xsig_pred);
 
   VectorXd weights;
-  Utils::GetWeights(n_aug_, lambda_, weights);
+  Utils::GetWeights(n_aug_, lambda_, /*output*/ weights);
 
-  Utils::PredictMeanAndCovariance(weights, Xsig_pred, x_, P_);
+  Utils::GetPredictionMeanAndCovariance(weights, Xsig_pred, /*output*/ x_, P_);
 }
 
 /**
