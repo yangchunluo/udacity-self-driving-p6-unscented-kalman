@@ -161,7 +161,7 @@ void TestGetRadarMeasurementMeanAndCovariance() {
 
   VectorXd z_pred;
   MatrixXd S, Zsig;
-  Utils::GetRadarMeasurementMeanAndCovariance(weights, Xsig_pred, std_radar_noise, z_pred, Zsig, S);
+  Utils::GetMeasurementMeanAndCovariance(true, weights, Xsig_pred, std_radar_noise, z_pred, Zsig, S);
 
   // Expected results
   VectorXd expected_z(n_z);

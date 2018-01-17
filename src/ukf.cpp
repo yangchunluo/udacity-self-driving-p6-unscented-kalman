@@ -74,15 +74,16 @@ void UKF::InitializeMeasurement(const MeasurementPackage& m) {
     default:
       throw "Unknown sensor type";
   }
-  // Initial state vector.
+  // Initial state vector and process covariance matrix.
+  // We are only certain about location (px, py) initially.
+  // We don't know much about velocity and its direction.
+  // For turn rate, we assume it does not change initially.
   x_ << px, py, 0, 0, 0;
-
-  // Initialize process covariance matrix. We are only certain about location (px, py) at this point.
   P_ << 1, 0, 0, 0, 0,
         0, 1, 0, 0, 0,
-        0, 0, 1, 0, 0,
-        0, 0, 0, 1, 0,
-        0, 0, 0, 0, 1;
+        0, 0, 10, 0, 0,
+        0, 0, 0, 10, 0,
+        0, 0, 0, 0, 10;
 
   // Record the first timestamp.
   previous_timestamp_ = m.timestamp_;
@@ -131,24 +132,19 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
   Utils::GetPredictionMeanAndCovariance(weights_, Xsig_pred, /*output*/ x_, P_);
 
   // Update
+  VectorXd std_noise;
+  if (isRadar) {
+    std_noise = VectorXd(3);
+    std_noise << std_radr_, std_radphi_, std_radrd_;
+  } else {
+    std_noise = VectorXd(2);
+    std_noise << std_laspx_, std_laspy_;
+  }
   VectorXd z_pred;
   MatrixXd Zsig, S;
-  switch (m.sensor_type_) {
-    case MeasurementPackage::RADAR: {
-      VectorXd std_radar_noise(3);
-      std_radar_noise << std_radr_, std_radphi_, std_radrd_;
-      Utils::GetRadarMeasurementMeanAndCovariance(weights_, Xsig_pred, std_radar_noise,
-                                                  /*output*/ z_pred, Zsig, S);
-      break;
-    }
-    case MeasurementPackage::LASER: {
-      VectorXd std_laser_noise(2);
-      std_laser_noise << std_laspx_, std_laspy_;
-      Utils::GetLaserMeasurementMeanAndCovariance(weights_, Xsig_pred, std_laser_noise,
-                                                  /*output*/ z_pred, Zsig, S);
-      break;
-    }
-  }
+  Utils::GetMeasurementMeanAndCovariance(isRadar, weights_, Xsig_pred, std_noise,
+                                         /*output*/ z_pred, Zsig, S);
+
   Utils::UpdateStates(isRadar, weights_, Xsig_pred, Zsig, z_pred, m.raw_measurements_, S,
                       /*inout*/ x_, P_);
 

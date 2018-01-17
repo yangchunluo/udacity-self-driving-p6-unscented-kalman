@@ -33,17 +33,11 @@ public:
   static void GetPredictionMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
                                              VectorXd& out_x, MatrixXd &out_P);
 
-  /** A standalone method to get radar measurement mean and covariance. */
-  static void GetRadarMeasurementMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
-                                                   const VectorXd& std_radar_noise,
-                                                   VectorXd& out_zpred,  MatrixXd& out_Zsig,
-                                                   MatrixXd& out_S);
-
-  /** A standalone method to get laser measurement mean and covariance. */
-  static void GetLaserMeasurementMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
-                                                   const VectorXd& std_laser_noise,
-                                                   VectorXd& out_zpred,  MatrixXd& out_Zsig,
-                                                   MatrixXd& out_S);
+  /** A standalone method to get measurement mean and covariance. */
+  static void GetMeasurementMeanAndCovariance(const bool isRadar, const VectorXd& weights,
+                                              const MatrixXd Xsig_pred, const VectorXd& std_radar_noise,
+                                              VectorXd& out_zpred,  MatrixXd& out_Zsig,
+                                              MatrixXd& out_S);
 
   /** A standalone method to update states. */
   static void UpdateStates(const bool isRadar, const VectorXd& weights, const MatrixXd& Xsig_pred,

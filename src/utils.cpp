@@ -139,11 +139,11 @@ void Utils::GetPredictionMeanAndCovariance(const VectorXd& weights, const Matrix
   }
 }
 
-void Utils::GetRadarMeasurementMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
-                                                 const VectorXd& std_radar_noise,
-                                                 VectorXd& out_zpred,  MatrixXd& out_Zsig,
-                                                 MatrixXd& out_S) {
-  const int n_z = std_radar_noise.size(); 
+void Utils::GetMeasurementMeanAndCovariance(const bool isRadar, const VectorXd& weights,
+                                            const MatrixXd Xsig_pred, const VectorXd& std_noise,
+                                            VectorXd& out_zpred,  MatrixXd& out_Zsig,
+                                            MatrixXd& out_S) {
+  const int n_z = std_noise.size();
 
   // Transform sigma points into measurement space
   out_Zsig = MatrixXd(n_z, Xsig_pred.cols());
@@ -155,9 +155,13 @@ void Utils::GetRadarMeasurementMeanAndCovariance(const VectorXd& weights, const 
          yawd = Xsig_pred(4, i);
       
       VectorXd zsig(n_z);
-      zsig(0) = sqrt(squared(px) + squared(py));                   // r
-      zsig(1) = atan2(py, px);                                     // phi
-      zsig(2) = (px * cos(yaw) * v + py * sin(yaw) * v) / zsig(0); // dot_r
+      if (isRadar) {
+        zsig(0) = sqrt(squared(px) + squared(py));                   // r
+        zsig(1) = atan2(py, px);                                     // phi
+        zsig(2) = (px * cos(yaw) * v + py * sin(yaw) * v) / zsig(0); // dot_r
+      } else {
+        zsig << px, py;
+      }
 
       out_Zsig.col(i) = zsig;
   }
@@ -171,46 +175,17 @@ void Utils::GetRadarMeasurementMeanAndCovariance(const VectorXd& weights, const 
   for (int i = 0; i < weights.size(); i++) {
     // Measurement residual
     VectorXd z_diff = out_Zsig.col(i) - out_zpred;
-    // Angle normozation
-    NormalizeAngle(z_diff(1));
+    if (isRadar) {
+      // Angle normozation
+      NormalizeAngle(z_diff(1));
+    }
 
     out_S += weights(i) * z_diff * z_diff.transpose();
   }
 
   // Add measurement noise covariance matrix
   for (int i = 0; i < n_z; i++) {
-    out_S(i, i) += squared(std_radar_noise(i));
-  }
-}
-
-void Utils::GetLaserMeasurementMeanAndCovariance(const VectorXd& weights, const MatrixXd Xsig_pred,
-                                                 const VectorXd& std_laser_noise,
-                                                 VectorXd& out_zpred,  MatrixXd& out_Zsig,
-                                                 MatrixXd& out_S) {
-  const int n_z = std_laser_noise.size(); 
-  out_Zsig = MatrixXd(n_z, Xsig_pred.cols());
-  // Transform sigma points into measurement space
-  for (int i = 0; i < Xsig_pred.cols(); i++) {
-    double px = Xsig_pred(0, i),
-           py = Xsig_pred(1, i);  
-    out_Zsig.col(i) << px, py;
-  }
-  
-  // Calculate mean predicted measurement
-  out_zpred = out_Zsig * weights;
-  
-  // Calculate innovation covariance matrix S
-  out_S = MatrixXd(n_z, n_z);
-  out_S.fill(0);
-  for (int i = 0; i < weights.size(); i++) {
-    // Measurement residual
-    VectorXd z_diff = out_Zsig.col(i) - out_zpred;
-    out_S += weights(i) * z_diff * z_diff.transpose();
-  }
-
-  // Add measurement noise covariance matrix
-  for (int i = 0; i < n_z; i++) {
-    out_S(i, i) += squared(std_laser_noise(i));
+    out_S(i, i) += squared(std_noise(i));
   }
 }
 

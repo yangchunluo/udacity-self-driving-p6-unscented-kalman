@@ -37,7 +37,7 @@ int main() {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
-  UKF ukf(true, false);
+  UKF ukf(true, true);
 
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
