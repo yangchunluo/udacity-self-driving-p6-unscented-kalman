@@ -46,7 +46,7 @@ public:
                                                    MatrixXd& out_S);
 
   /** A standalone method to update states. */
-  static void UpdateStates(const VectorXd& weights, const MatrixXd& Xsig_pred, const MatrixXd& Zsig,
-                           const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,
+  static void UpdateStates(const bool isRadar, const VectorXd& weights, const MatrixXd& Xsig_pred,
+                           const MatrixXd& Zsig, const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,
                            VectorXd& x, MatrixXd& P);
 };

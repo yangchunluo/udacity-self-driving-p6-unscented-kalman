@@ -81,9 +81,9 @@ public:
   void ProcessMeasurement(const MeasurementPackage& m);
 
   /**
-   * Get a copy of the current estimate vector.
+   * Get a copy of the current state vector.
    */
-  VectorXd GetEstimates() {
+  VectorXd GetStates() {
     return x_;
   }
 

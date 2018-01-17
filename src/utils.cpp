@@ -215,8 +215,8 @@ void Utils::GetLaserMeasurementMeanAndCovariance(const VectorXd& weights, const 
   }
 }
 
-void Utils::UpdateStates(const VectorXd& weights, const MatrixXd& Xsig_pred, const MatrixXd& Zsig,
-                         const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,
+void Utils::UpdateStates(const bool isRadar, const VectorXd& weights, const MatrixXd& Xsig_pred,
+                         const MatrixXd& Zsig, const VectorXd& z_pred, const VectorXd& z, const MatrixXd& S,
                          VectorXd& x, MatrixXd& P) {
   const int n_x = x.size(),
             n_z = z.size();
@@ -227,8 +227,10 @@ void Utils::UpdateStates(const VectorXd& weights, const MatrixXd& Xsig_pred, con
   for (int i = 0; i < Xsig_pred.cols(); i++) {
     // Measurement residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
-    // Angle normalization
-    NormalizeAngle(z_diff(1));
+    if (isRadar) {
+      // Angle normalization
+      NormalizeAngle(z_diff(1));
+    }
 
     // State difference
     VectorXd x_diff = Xsig_pred.col(i) - x;
@@ -243,8 +245,10 @@ void Utils::UpdateStates(const VectorXd& weights, const MatrixXd& Xsig_pred, con
   
   // Residual concerning the actual measurement
   VectorXd z_diff = z - z_pred;
-  // Angle normalization
-  NormalizeAngle(z_diff(1));
+  if (isRadar) {
+    // Angle normalization
+    NormalizeAngle(z_diff(1));
+  }
 
   // Update state mean and covariance matrix
   x += K * z_diff;

@@ -96,15 +96,29 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
     return;
   }
   
-  if (!use_laser_ && m.sensor_type_ == MeasurementPackage::LASER) {
-    cout << "Skipping laser measurement";
-    return;
-  }
-  if (!use_radar_ && m.sensor_type_ == MeasurementPackage::RADAR) {
-    return;
+  bool isRadar;
+  switch (m.sensor_type_) {
+    case MeasurementPackage::RADAR: {
+      if (!use_radar_) {
+        cout << "Skipping radar measurement"<<endl;
+        return;
+      }
+      isRadar = true;
+      break;
+    }
+    case MeasurementPackage::LASER: {
+      if (!use_laser_) {
+        cout << "Skipping laser measurement"<<endl;
+        return;
+      }
+      isRadar = false;
+      break;
+    }
+    default:
+      throw "Unknown sensor type";
   }
 
-  double dt = (m.timestamp_ - previous_timestamp_) / 1000000.0;
+  const double dt = (m.timestamp_ - previous_timestamp_) / 1000000.0;
   previous_timestamp_ = m.timestamp_;
 
   // Prediction
@@ -134,9 +148,10 @@ void UKF::ProcessMeasurement(const MeasurementPackage& m) {
                                                   /*output*/ z_pred, Zsig, S);
       break;
     }
-    default:
-      throw "Unknown sensor type";
   }
-  Utils::UpdateStates(weights_, Xsig_pred, Zsig, z_pred, m.raw_measurements_, S,
+  Utils::UpdateStates(isRadar, weights_, Xsig_pred, Zsig, z_pred, m.raw_measurements_, S,
                       /*inout*/ x_, P_);
+
+  cout << "x=" << x_ << endl;
+  //cout << "P=" << P_ << endl;
 }

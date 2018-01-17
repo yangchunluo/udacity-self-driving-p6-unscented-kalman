@@ -37,7 +37,7 @@ int main() {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
-  UKF ukf(true, true);
+  UKF ukf(true, false);
 
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
@@ -100,13 +100,16 @@ int main() {
     // Call ProcessMeasurment(meas_package) for Kalman filter
     ukf.ProcessMeasurement(meas_package);
 
-    // Save the current estimates.
-    VectorXd estimate = ukf.GetEstimates();
-    VectorXd e2 = ukf.GetEstimates();
-    assert (&e2 != &estimate);
+    // Get the current estimates and convert to (px, py, vx, vy) space
+    VectorXd states = ukf.GetStates();
+    VectorXd estimate(4);
+    estimate << states(0), // px
+                states(1), // py
+    	          states(2) * cos(states(3)), // v * cos(yaw)
+                states(2) * sin(states(3)); // v * sin(yaw)
     estimations.push_back(estimate);
 
-    // Compute the running error metric
+    // Compute the running error metrics
     VectorXd RMSE = Utils::CalculateRMSE(estimations, ground_truth);
 
     // Assemble the message to be sent back
@@ -118,7 +121,7 @@ int main() {
     msgJson["rmse_vx"] = RMSE(2);
     msgJson["rmse_vy"] = RMSE(3);
     auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
-    // std::cout << msg << std::endl;
+    std::cout << msg << std::endl;
     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
   });
 

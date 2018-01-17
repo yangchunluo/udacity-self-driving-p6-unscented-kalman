@@ -239,7 +239,7 @@ void TestUpdateStates() {
       0.2187,
       2.0062;
 
-  Utils::UpdateStates(weights, Xsig_pred, Zsig, z_pred, z, S, x, P);
+  Utils::UpdateStates(true, weights, Xsig_pred, Zsig, z_pred, z, S, x, P);
 
   VectorXd expected_x(n_x);
   expected_x << 5.92276, 1.41823, 2.15593, 0.489274, 0.321338;
