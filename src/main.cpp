@@ -48,8 +48,8 @@ int main() {
     int above_count;
     double threshold;
   } sensor_nis_info[MeasurementPackage::COUNT] = {
-    [MeasurementPackage::RADAR] = {0, 0, 7.815 /* df = 3 */},
-    [MeasurementPackage::LASER] = {0, 0, 5.991 /* df = 2 */}
+    /* Laser, df = 2 */ {0, 0, 5.991},
+    /* Radar, df = 3 */ {0, 0, 7.815}
   };
 
   h.onMessage([&ukf, &estimations, &ground_truth, &sensor_nis_info]
