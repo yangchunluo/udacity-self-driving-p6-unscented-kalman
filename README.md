@@ -1,92 +1,57 @@
-# Unscented Kalman Filter Project Starter Code
-Self-Driving Car Engineer Nanodegree Program
+## Unscented Kalman Filter Project
+---
+Yangchun Luo
 
-In this project utilize an Unscented Kalman Filter to estimate the state of a moving object of interest with noisy lidar and radar measurements. Passing the project requires obtaining RMSE values that are lower that the tolerance outlined in the project rubric. 
+Jan 17, 2018
 
-This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases)
-
-This repository includes two files that can be used to set up and intall [uWebSocketIO](https://github.com/uWebSockets/uWebSockets) for either Linux or Mac systems. For windows you can use either Docker, VMware, or even [Windows 10 Bash on Ubuntu](https://www.howtogeek.com/249966/how-to-install-and-use-the-linux-bash-shell-on-windows-10/) to install uWebSocketIO. Please see [this concept in the classroom](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/16cf4a78-4fc7-49e1-8621-3450ca938b77) for the required version and installation scripts.
-
-Once the install for uWebSocketIO is complete, the main program can be built and ran by doing the following from the project top directory.
-
-1. mkdir build
-2. cd build
-3. cmake ..
-4. make
-5. ./UnscentedKF
-
-Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
-
-Note that the programs that need to be written to accomplish the project are src/ukf.cpp, src/ukf.h, tools.cpp, and tools.h
-
-The program main.cpp has already been filled out, but feel free to modify it.
-
-Here is the main protcol that main.cpp uses for uWebSocketIO in communicating with the simulator.
-
-
-INPUT: values provided by the simulator to the c++ program
-
-["sensor_measurement"] => the measurment that the simulator observed (either lidar or radar)
-
-
-OUTPUT: values provided by the c++ program to the simulator
-
-["estimate_x"] <= kalman filter estimated position x
-["estimate_y"] <= kalman filter estimated position y
-["rmse_x"]
-["rmse_y"]
-["rmse_vx"]
-["rmse_vy"]
+This is the assignment for Udacity's Self-Driving Car Term 2 Project 2.
 
 ---
 
-## Other Important Dependencies
-* cmake >= 3.5
-  * All OSes: [click here for installation instructions](https://cmake.org/install/)
-* make >= 4.1 (Linux, Mac), 3.81 (Windows)
-  * Linux: make is installed by default on most Linux distros
-  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
-* gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
-  * Mac: same deal as make - [install Xcode command line tools](https://developer.apple.com/xcode/features/)
-  * Windows: recommend using [MinGW](http://www.mingw.org/)
+The goal of this project is to utilize an Unscented Kalman Filter to estimate the state of a moving object of interest with noisy lidar and radar measurements. Passing the project requires obtaining RMSE values that are lower that the tolerance outlined in the project rubric.
 
-## Basic Build Instructions
+### To build
 
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./UnscentedKF` Previous versions use i/o from text files.  The current state uses i/o
-from the simulator.
+```bash
+mkdir build
+cd build
+cmake ..
+make
+./UnscentedKF
+```
 
-## Editor Settings
+### To run
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+Download the [Term 2 simulator suite](https://github.com/udacity/self-driving-car-sim/releases). Open it and choose the EKF/UKF project.
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+Other setup information can be found in the original [README](README-orig.md) file.
 
-## Code Style
+### Parameters tuning
 
-Please stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html) as much as possible.
+I calculated the NIS score for each processing iteration. I then summarized all the NIS scores by the percentage that is above the 95% threshold from Chi-Squared Distribution table (one summary per sensor type). I used such percentage to guide the tuning of linear and yaw acceleration noise parameters.  
 
-## Generating Additional Data
+If the percentage is above 5%, it means that I may have underestimated the acceleration noises. So I increase the parameter values. If the percentage is below 5%, it means that I may have overestimated the accleration noises. So I decrease the parameter values.
 
-This is optional!
+The following results are achieved using `std_a=1.5 m/s^2` and `std_yawa=1 rad/s^2`.
 
-If you'd like to generate your own radar and lidar data, see the
-[utilities repo](https://github.com/udacity/CarND-Mercedes-SF-Utilities) for
-Matlab scripts that can generate additional data.
+### Performance evaluation
 
-## Project Instructions and Rubric
+<table>
+<tr><th><th>Px RMSE<th>Py RMSE<th>Vx RMSE<th>Vy RMSE
+<tr><td>EKF-Dataset1<td>0.0973<td>0.0855<td>0.4513<td>0.4399
+<tr><td><b>UKF-Dataset1<td><b>0.0674<td><b>0.0827<td><b>0.3372<td><b>0.1984
+<tr><td>Improvement<td>30.7%<td>3.2%<td>25.3%<td>54.9%
+<tr><td>EKF-Dataset2<td>0.0723<td>0.0969<td>0.4137<td>0.5277
+<tr><td><b>UKF-Dataset2<td><b>0.0667<td><b>0.0683<td><b>0.3674<td><b>0.2041
+<tr><td>Improvement<td>7.7%<td>29.5%<td>11.2%<td>61.3%
+</table>
 
-This information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/c3eb3583-17b2-4d83-abf7-d852ae1b9fff/concepts/f437b8b0-f2d8-43b0-9662-72ac4e4029c1)
-for instructions and the project rubric.
+#### Dataset1
+<img src="Docs/dataset1-result.jpg" width=500 border=1/>
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+#### Dataset2
+<img src="Docs/dataset2-result.jpg" width=500 border=1/>
 
+### Unit tests
+
+For each calculation step in UKF, I added a unit test to ensure its numerical correctness. This has proven critical in the success of this project. It is much better and less hair-pulling to debug indivdual calculation step than having everything together and trying to figure which part is the culprit.  

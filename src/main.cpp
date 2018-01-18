@@ -42,9 +42,17 @@ int main() {
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  vector<double> sensor_nis[MeasurementPackage::SensorType::COUNT];
+  // NIS score
+  struct {
+    int total_count;
+    int above_count;
+    double threshold;
+  } sensor_nis_info[MeasurementPackage::COUNT] = {
+    [MeasurementPackage::RADAR] = {0, 0, 7.815 /* df = 3 */},
+    [MeasurementPackage::LASER] = {0, 0, 5.991 /* df = 2 */}
+  };
 
-  h.onMessage([&ukf, &estimations, &ground_truth, &sensor_nis]
+  h.onMessage([&ukf, &estimations, &ground_truth, &sensor_nis_info]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     
     // "42" at the start of the message means there's a websocket message event.
@@ -104,7 +112,10 @@ int main() {
 
     // Accumulate NIS per sensor type
     if (nis > 0) {
-      sensor_nis[meas_package.sensor_type_].push_back(nis);
+      sensor_nis_info[meas_package.sensor_type_].total_count++;
+      if (nis > sensor_nis_info[meas_package.sensor_type_].threshold) {
+        sensor_nis_info[meas_package.sensor_type_].above_count++;
+      }
     }
 
     // Get the current estimates and convert to (px, py, vx, vy) space
@@ -130,6 +141,18 @@ int main() {
     auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
     std::cout << msg << std::endl;
     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+
+    struct {
+      string sensorName;
+    } loopCtxt[MeasurementPackage::COUNT] = {
+      {"Radar"},
+      {"Laser"}
+    };
+    for (auto i = 0; i < MeasurementPackage::COUNT; i++) {
+      float percent = sensor_nis_info[i].total_count == 0 ? 0 :
+                      sensor_nis_info[i].above_count / (float) sensor_nis_info[i].total_count;
+      cout << loopCtxt[i].sensorName << " NIS: " << percent << endl;
+    }
   });
 
   // We don't need this since we're not using HTTP but if it's removed the program doesn't compile :-(

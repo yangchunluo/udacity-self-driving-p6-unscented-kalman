@@ -9,10 +9,6 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-/**
- * Initializes Unscented Kalman filter
- * This is scaffolding, do not modify
- */
 UKF::UKF(bool use_laser, bool use_radar): use_laser_(use_laser),
                                           use_radar_(use_radar),
                                           is_initialized_(false),
@@ -29,12 +25,12 @@ UKF::UKF(bool use_laser, bool use_radar): use_laser_(use_laser),
   Utils::GetWeights(n_aug_, lambda_, /*output*/ weights_);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  // FIXME: to tune
-  std_a_ = 0.1;
+  // This needs to be tuned.
+  std_a_ = 1.5;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  // FIXME: to tune
-  std_yawdd_ = 0.1;
+  // This needs to be tuned.
+  std_yawdd_ = 1;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -83,7 +79,7 @@ void UKF::InitializeMeasurement(const MeasurementPackage& m) {
         0, 1, 0, 0, 0,
         0, 0, 10, 0, 0,
         0, 0, 0, 10, 0,
-        0, 0, 0, 0, 10;
+        0, 0, 0, 0, 1;
 
   // Record the first timestamp.
   previous_timestamp_ = m.timestamp_;
@@ -151,6 +147,5 @@ double UKF::ProcessMeasurement(const MeasurementPackage& m) {
 
   cout << "x=\n" << x_ << endl;
   cout << "P=\n" << P_ << endl;
-
   return nis;
 }
