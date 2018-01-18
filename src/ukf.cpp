@@ -54,17 +54,23 @@ UKF::~UKF() {}
 
 void UKF::InitializeMeasurement(const MeasurementPackage& m) {
   float px, py;
+  float std_px, std_py;
   switch (m.sensor_type_) {
     case MeasurementPackage::RADAR: {
-      // Convert radar from polar to cartesian coordinates. Ignore velocity informaiton.
+      // Convert radar from polar to cartesian coordinates.
+      // Ignore velocity informaiton.
       px = m.raw_measurements_[0] * sin(m.raw_measurements_[1]);
       py = m.raw_measurements_[0] * cos(m.raw_measurements_[1]);
+      std_px = std_py = 1;
       break;
     }
     case MeasurementPackage::LASER: {
       // Laser has position (px, py) but no velocity information.
+      // Position is more acurate than radar.
       px = m.raw_measurements_[0];
       py = m.raw_measurements_[1];
+      std_px = std_laspx_;
+      std_py = std_laspy_;
       break;
     }
     default:
@@ -72,11 +78,11 @@ void UKF::InitializeMeasurement(const MeasurementPackage& m) {
   }
   // Initial state vector and process covariance matrix.
   // We are only certain about location (px, py) initially.
-  // We don't know much about velocity and its direction.
+  // We don't know anything about velocity and its direction.
   // For turn rate, we assume it does not change initially.
   x_ << px, py, 0, 0, 0;
-  P_ << 1, 0, 0, 0, 0,
-        0, 1, 0, 0, 0,
+  P_ << std_px, 0, 0, 0, 0,
+        0, std_py, 0, 0, 0,
         0, 0, 10, 0, 0,
         0, 0, 0, 10, 0,
         0, 0, 0, 0, 1;

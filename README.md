@@ -34,23 +34,25 @@ If the percentage is above 5%, it means that I may have underestimated the accel
 
 The following results are achieved using `std_a=1.5 m/s^2` and `std_yawa=1 rad/s^2`.
 
+I aslo set the initial values of covariance matrix P differently for laser and radar measurements. Since laser measurement is more acurate, the corresponding entries for px and py are lower compared to if the first measurement is radar. This leads to further improvement for dataset 1 (where first measurement is laser).
+
 ### Performance evaluation
 
 <table>
 <tr><th><th>Px RMSE<th>Py RMSE<th>Vx RMSE<th>Vy RMSE
 <tr><td>EKF-Dataset1<td>0.0973<td>0.0855<td>0.4513<td>0.4399
-<tr><td><b>UKF-Dataset1<td><b>0.0674<td><b>0.0827<td><b>0.3372<td><b>0.1984
-<tr><td>Improvement<td>30.7%<td>3.2%<td>25.3%<td>54.9%
+<tr><td><b>UKF-Dataset1<td><b>0.0675<td><b>0.0824<td><b>0.3230<td><b>0.1964
+<tr><td>Improvement<td>30.6%<td>6.9%<td>28.4%<td>55.4%
 <tr><td>EKF-Dataset2<td>0.0723<td>0.0969<td>0.4137<td>0.5277
 <tr><td><b>UKF-Dataset2<td><b>0.0667<td><b>0.0683<td><b>0.3674<td><b>0.2041
 <tr><td>Improvement<td>7.7%<td>29.5%<td>11.2%<td>61.3%
 </table>
 
 #### Dataset1
-<img src="Docs/dataset1-result.jpg" width=500 border=1/>
+<img src="Docs/dataset1-result.jpg" width=500 border=3/>
 
 #### Dataset2
-<img src="Docs/dataset2-result.jpg" width=500 border=1/>
+<img src="Docs/dataset2-result.jpg" width=500 border=3/>
 
 ### Unit tests
 

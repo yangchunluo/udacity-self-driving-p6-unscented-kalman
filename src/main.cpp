@@ -42,15 +42,15 @@ int main() {
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
-  // NIS score
+  // For NIS score
   struct {
     int total_count;
     int above_count;
     double threshold;
-  } sensor_nis_info[MeasurementPackage::COUNT] = {
-    [MeasurementPackage::RADAR] = {0, 0, 7.815 /* df = 3 */},
-    [MeasurementPackage::LASER] = {0, 0, 5.991 /* df = 2 */}
-  };
+  } sensor_nis_info[MeasurementPackage::COUNT];
+  memset(sensor_nis_info, 0, sizeof(sensor_nis_info));
+  sensor_nis_info[MeasurementPackage::LASER].threshold = 5.991; /* df=2 */
+  sensor_nis_info[MeasurementPackage::RADAR].threshold = 7.815; /* df=3 */
 
   h.onMessage([&ukf, &estimations, &ground_truth, &sensor_nis_info]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -142,16 +142,10 @@ int main() {
     std::cout << msg << std::endl;
     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 
-    struct {
-      string sensorName;
-    } loopCtxt[MeasurementPackage::COUNT] = {
-      {"Radar"},
-      {"Laser"}
-    };
     for (auto i = 0; i < MeasurementPackage::COUNT; i++) {
       float percent = sensor_nis_info[i].total_count == 0 ? 0 :
                       sensor_nis_info[i].above_count / (float) sensor_nis_info[i].total_count;
-      cout << loopCtxt[i].sensorName << " NIS: " << percent << endl;
+      cout << (i == MeasurementPackage::RADAR ? "Radar" : "Laser") << " NIS: " << percent << endl;
     }
   });
 
